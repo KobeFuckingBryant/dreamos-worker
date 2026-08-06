@@ -1,0 +1,3 @@
+runpod_volume_extra:
+  base_path: /runpod-volume
+  seedvr2: models/SEEDVR2
