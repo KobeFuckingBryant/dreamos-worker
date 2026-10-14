@@ -1,4 +1,4 @@
-# DreamOS custom worker: worker-comfyui + SeedVR2 restoration nodes.
+# DreamOS custom worker: worker-comfyui (+ SeedVR2 nodes up to talk-v1; h3-v1 = MiniMax H3).
 # Base MUST stay -base-cuda12.8.1 — the only variant that boots on US-IL-1 4090s.
 FROM runpod/worker-comfyui:5.8.6-base-cuda12.8.1
 
@@ -23,13 +23,9 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade torch torchvision tor
       [ -f "$r" ] && uv pip install --python /opt/venv/bin/python -r "$r" || true; \
     done
 
-# SeedVR2 (ByteDance restorer, ICLR 2026) — the grit stage of the finish chain.
-RUN comfy-node-install seedvr2_videoupscaler
-
-# Belt-and-braces: comfy-node-install should handle deps, but the node failed to
-# LOAD at runtime on v2 ("Node not found") — install its requirements explicitly.
-RUN SEEDVR_DIR=$(ls -d /comfyui/custom_nodes/*eedvr2* | head -1) && \
-    pip install -r "$SEEDVR_DIR/requirements.txt"
+# No SeedVR2 nodes in h3 images: comfy-node-install doesn't recognise the swapped
+# v0.40.0 checkout, and the H3 endpoint never runs SeedVR2 (its own endpoint and
+# image, seedvr2-v3, do). Build SeedVR2/talk tags from commit f5cf173 instead.
 
 # Build-time load test: serverless worker logs are unreachable, so surface the
 # node-import traceback IN THE BUILD LOG. Does not fail the build — diagnostic.
@@ -38,7 +34,7 @@ RUN python -c "import torch; print('torch', torch.__version__, 'cuda', torch.ver
     grep -rqs "MiniMaxH3ImageToVideo" /comfyui/comfy_extras && echo "H3 nodes present" && \
     ls /comfyui/custom_nodes/ && cd /comfyui && \
     (timeout 300 python main.py --quick-test-for-ci --cpu 2>&1 || true) | \
-    grep -iE "minimax|seedvr|cannot import|import fail|traceback|error" | head -40
+    grep -iE "minimax|cannot import|import fail|traceback|error" | head -40
 
 # Weights live on the network volume (models/SEEDVR2/), which worker-comfyui does
 # NOT auto-map (only classic subdirs) — this mapping makes ComfyUI see them.
