@@ -17,3 +17,8 @@ runpod_worker_comfy:
   # Wan2.2-S2V lip-sync (talk endpoint, 2026-09-30): AudioEncoderLoader only
   # reads the audio_encoders folder, which the stock mapping never exposes.
   audio_encoders: models/audio_encoders/
+  # MiniMax H3 (h3-v1, 2026-10-14): weights are staged in the classic unet/clip/
+  # vae/loras dirs, but map the new-style folders too so either layout loads.
+  diffusion_models: models/diffusion_models/
+  text_encoders: models/text_encoders/
+  model_patches: models/model_patches/

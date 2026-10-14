@@ -21,4 +21,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/kobefuckingbryant/dreamos-worker:talk-v1
+          tags: ghcr.io/kobefuckingbryant/dreamos-worker:h3-v1
